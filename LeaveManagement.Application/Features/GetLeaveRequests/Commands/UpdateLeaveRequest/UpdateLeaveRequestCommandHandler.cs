@@ -16,19 +16,19 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Commands.UpdateL
         private readonly ILeaveTypeRepository _leaveTypeRepository;
         private readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
-        private readonly IAppLogger<UpdateLeaveRequestCommandHandler> _appLogger;
+        private readonly IAppLogger<UpdateLeaveRequestCommandHandler> _Logger;
 
         public UpdateLeaveRequestCommandHandler(ILeaveRequestRepository leaveRequestRepository,
             ILeaveTypeRepository leaveTypeRepository,
             IMapper mapper, 
             IEmailSender emailSender,
-            IAppLogger<UpdateLeaveRequestCommandHandler> appLogger)
+            IAppLogger<UpdateLeaveRequestCommandHandler> Logger)
         {
             _leaveRequestRepository = leaveRequestRepository;
             _leaveTypeRepository = leaveTypeRepository;
             _mapper = mapper;
             _emailSender = emailSender;
-            _appLogger = appLogger;
+            _Logger =  Logger;
         }
         public async Task<Unit> Handle(UpdateLeaveRequestCommand request, CancellationToken cancellationToken)
         {
@@ -68,7 +68,7 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Commands.UpdateL
             catch (Exception ex)
             {
 
-                _appLogger.LogWarning(ex.Message);
+                _Logger.LogWarning(ex.Message);
             }
 
 

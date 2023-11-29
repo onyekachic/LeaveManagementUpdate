@@ -1,10 +1,12 @@
 ﻿using LeaveManagement.Application.Features.GetLeaveRequests.Commands.CancelLeaveRequest;
 using LeaveManagement.Application.Features.GetLeaveRequests.Commands.ChangeLeaveRequest;
+using LeaveManagement.Application.Features.GetLeaveRequests.Commands.CreateLeaveRequest;
 using LeaveManagement.Application.Features.GetLeaveRequests.Commands.DeleteLeaveRequest;
 using LeaveManagement.Application.Features.GetLeaveRequests.Commands.UpdateLeaveRequest;
 using LeaveManagement.Application.Features.GetLeaveRequests.Queries.GetLeaveRequestDetails;
 using LeaveManagement.Application.Features.GetLeaveRequests.Queries.GetLeaveRequests;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,6 +15,7 @@ namespace LeaveManagement.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class LeaveRequestsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -37,12 +40,15 @@ namespace LeaveManagement.Api.Controllers
             return Ok(leaveRequest);
         }
 
-        // POST api/<LeaveRequestController>
+        // POST api/<LeaveRequestsController>
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public void Post([FromBody] string value)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> Post(CreateLeaveRequestCommand leaveRequest)
         {
+            var response = await _mediator.Send(leaveRequest);
+            return CreatedAtAction(nameof(Get), new { id = response });
         }
 
         // PUT api/<LeaveRequestController>/5

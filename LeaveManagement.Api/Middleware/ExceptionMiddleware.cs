@@ -1,5 +1,6 @@
 ﻿using LeaveManagement.Api.Modules;
 using LeaveManagement.Application.Exceptions;
+using Newtonsoft.Json;
 using SendGrid.Helpers.Errors.Model;
 using System.Net;
 
@@ -8,10 +9,12 @@ namespace LeaveManagement.Api.Middleware
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next)
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext httpContext)
@@ -69,7 +72,9 @@ namespace LeaveManagement.Api.Middleware
             }
 
             httpContext.Response.StatusCode = (int)statusCode;
-           await httpContext.Response.WriteAsJsonAsync(problem);
+            var logMessage = JsonConvert.SerializeObject(problem);
+            _logger.LogError(logMessage);
+            await httpContext.Response.WriteAsJsonAsync(problem);
         }
     }
 }

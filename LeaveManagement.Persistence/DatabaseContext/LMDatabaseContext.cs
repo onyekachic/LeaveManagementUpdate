@@ -1,4 +1,5 @@
-﻿using LeaveManagement.Domain;
+﻿using LeaveManagement.Application.Contracts.Identity;
+using LeaveManagement.Domain;
 using LeaveManagement.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +7,11 @@ namespace LeaveManagement.Persistence.DatabaseContext
 {
     public class LMDatabaseContext : DbContext
     {
-        public LMDatabaseContext(DbContextOptions<LMDatabaseContext> options) : base(options)
-        {
+        private readonly IUserService _userService;
 
+        public LMDatabaseContext(DbContextOptions<LMDatabaseContext> options,IUserService userService) : base(options)
+        {
+            _userService = userService;
         }
         public DbSet<LeaveType> LeaveTypes { get; set; }
         public DbSet<LeaveAllocation> LeaveAllocations { get; set; }
@@ -28,10 +31,12 @@ namespace LeaveManagement.Persistence.DatabaseContext
                 .Where(q => q.State == EntityState.Added || q.State == EntityState.Modified))
             {
                 entry.Entity.DateModified = DateTime.Now;
+                entry.Entity.ModifiedBy = _userService.UserId;
 
                 if (entry.State == EntityState.Added)
                 {
                     entry.Entity.DateCreated = DateTime.Now;
+                    entry.Entity.CreatedBy = _userService.UserId;
                 }
 
             }

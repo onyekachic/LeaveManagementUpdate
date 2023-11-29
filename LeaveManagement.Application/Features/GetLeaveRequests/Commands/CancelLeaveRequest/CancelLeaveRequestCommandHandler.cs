@@ -10,13 +10,17 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Commands.CancelL
     public class CancelLeaveRequestCommandHandler : IRequestHandler<CancelLeaveRequestCommand, Unit>
     {
         private readonly ILeaveRequestRepository _leaveRequestRepository;
+        private readonly ILeaveAllocationRepository _leaveAllocationRepository;
         private readonly IEmailSender _emailSender;
         private readonly IAppLogger<CancelLeaveRequestCommandHandler> _appLogger;
 
-        public CancelLeaveRequestCommandHandler(ILeaveRequestRepository leaveRequestRepository, 
-            IEmailSender emailSender,IAppLogger<CancelLeaveRequestCommandHandler> appLogger)
+        public CancelLeaveRequestCommandHandler(ILeaveRequestRepository leaveRequestRepository,
+            ILeaveAllocationRepository leaveAllocationRepository,
+            IEmailSender emailSender,
+            IAppLogger<CancelLeaveRequestCommandHandler> appLogger)
         {
             _leaveRequestRepository = leaveRequestRepository;
+            _leaveAllocationRepository = leaveAllocationRepository;
             _emailSender = emailSender;
             _appLogger = appLogger;
         }
@@ -24,16 +28,27 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Commands.CancelL
         {
             var leaveRequest = await _leaveRequestRepository.GetByIdAsync(request.Id);
 
-            if(leaveRequest is null)
+            if (leaveRequest is null)
             {
                 throw new NotFoundException(nameof(leaveRequest), request.Id);
             }
 
 
             leaveRequest.Cancelled = true;
+            await _leaveRequestRepository.UpdateAsync(leaveRequest);
 
             //If already approved, re-evaluate the employee's allocation for the leave Type
+            if (leaveRequest.Approved == true)
+            {
+                int daysRequested = (int)(leaveRequest.EndDate - leaveRequest.StartDate).TotalDays;
+                var allocation = await _leaveAllocationRepository.GetUserAllocations
+                    (leaveRequest.RequestingEmployeeId, leaveRequest.LeaveTypeId);
 
+                allocation.NumberOfDays += daysRequested;
+
+                await _leaveAllocationRepository.UpdateAsync(allocation);
+               
+            }
 
             try
             {

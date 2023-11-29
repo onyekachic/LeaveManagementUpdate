@@ -16,16 +16,19 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Commands.ChangeL
     {
         private readonly ILeaveRequestRepository _leaveRequestRepository;
         private readonly ILeaveTypeRepository _leaveTypeRepository;
+        private readonly ILeaveAllocationRepository _leaveAllocationRepository;
         private readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
 
         public ChangeLeaveRequestApprovalCommandHandler(ILeaveRequestRepository leaveRequestRepository,
             ILeaveTypeRepository leaveTypeRepository, 
+            ILeaveAllocationRepository leaveAllocationRepository,
             IMapper mapper,
             IEmailSender emailSender)
         {
             _leaveRequestRepository = leaveRequestRepository;
             _leaveTypeRepository = leaveTypeRepository;
+            _leaveAllocationRepository = leaveAllocationRepository;
             _mapper = mapper;
             _emailSender = emailSender;
         }
@@ -40,6 +43,15 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Commands.ChangeL
 
             leaveRequest.Approved = request.Approved;
             await _leaveRequestRepository.UpdateAsync(leaveRequest);
+
+            if(request.Approved)
+            {
+                int daysRequested = (int)(leaveRequest.EndDate - leaveRequest.StartDate).TotalDays;
+                var allocation = await _leaveAllocationRepository.GetUserAllocations
+                    (leaveRequest.RequestingEmployeeId, leaveRequest.LeaveTypeId);
+                allocation.NumberOfDays -= daysRequested;
+                await _leaveAllocationRepository.UpdateAsync (allocation);
+            }
 
             //send confirmation email
             var email = new EmailMessage

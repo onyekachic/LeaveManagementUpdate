@@ -42,6 +42,7 @@ namespace LeaveManagement.Persistence.Repositories
             return await _context.Set<T>()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(q => q.Id == id);
+
         }
 
         public async Task UpdateAsync(T entity)

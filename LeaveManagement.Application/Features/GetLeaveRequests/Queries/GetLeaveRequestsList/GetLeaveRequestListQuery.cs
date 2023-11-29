@@ -4,5 +4,6 @@ namespace LeaveManagement.Application.Features.GetLeaveRequests.Queries.GetLeave
 {
     public  class GetLeaveRequestListQuery : IRequest<List<LeaveRequestListDto>>
     {
+        public bool IsLoggedInUser { get; set; }
     }
 }

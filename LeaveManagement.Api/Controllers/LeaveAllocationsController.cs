@@ -23,7 +23,7 @@ namespace LeaveManagement.Api.Controllers
         }
         // GET: api/<LeaveAllocationsController>
         [HttpGet]
-        public async Task<ActionResult<List<LeaveAllocationListDto>>> Get()
+        public async Task<ActionResult<List<LeaveAllocationListDto>>> Get(bool isLoggedInUser = false)
         {
             var leaveAllocations = await _mediator.Send(new GetLeaveAllocationListQuery());
             return Ok(leaveAllocations);
@@ -42,7 +42,7 @@ namespace LeaveManagement.Api.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult>  Post(CreateLeaveAllocationCommand leaveallocation)
+        public async Task<ActionResult> Post(CreateLeaveAllocationCommand leaveallocation)
         {
             var response = await _mediator.Send(leaveallocation);
             return CreatedAtAction(nameof(Get), new { id = response });

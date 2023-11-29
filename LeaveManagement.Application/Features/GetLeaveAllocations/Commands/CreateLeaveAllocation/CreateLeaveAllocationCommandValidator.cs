@@ -1,21 +1,15 @@
 ﻿using FluentValidation;
 using LeaveManagement.Application.Contracts.Persistence;
-using LeaveManagement.Application.Features.LeaveType.Commands.CreateLeaveType;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LeaveManagement.Application.Features.LeaveAllocation.Commands.CreateLeaveAllocation;
 
 public class CreateLeaveAllocationCommandValidator : AbstractValidator<CreateLeaveAllocationCommand>
 {
-    private readonly ILeaveAllocationRepository _leaveAllocationRepository;
+    private readonly ILeaveTypeRepository _leaveTypeRepository;
 
-    public CreateLeaveAllocationCommandValidator(ILeaveAllocationRepository leaveAllocationRepository)
+    public CreateLeaveAllocationCommandValidator(ILeaveTypeRepository leaveTypeRepository)
     {
-        _leaveAllocationRepository = leaveAllocationRepository;
+        _leaveTypeRepository = leaveTypeRepository;
 
         RuleFor(p => p.LeaveTypeId)
             .GreaterThan(0)
@@ -27,7 +21,7 @@ public class CreateLeaveAllocationCommandValidator : AbstractValidator<CreateLea
 
     private async Task<bool> LeaveTypeMustExist(int id, CancellationToken token)
     {
-        var leaveType = await _leaveAllocationRepository.GetByIdAsync(id);
+        var leaveType = await _leaveTypeRepository.GetByIdAsync(id);
         return leaveType != null;
     }
 }
